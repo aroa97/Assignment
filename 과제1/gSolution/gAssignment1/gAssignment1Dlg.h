@@ -5,7 +5,6 @@
 
 #pragma once
 
-
 // CgAssignment1Dlg 대화 상자
 class CgAssignment1Dlg : public CDialogEx
 {
@@ -34,10 +33,24 @@ protected:
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP();
+
 public:
 	int m_nX1;
 	int m_nY1;
 	int m_nX2;
 	int m_nY2;
+	int m_nGray;
+	int m_nRadius;
+	CString m_sRadius;
+
 	afx_msg void OnDestroy();
+	afx_msg void OnBnClickedBtnDraw();
+	afx_msg void OnBnClickedBtnAction();
+	afx_msg void OnBnClickedBtnOpen();
+
+	void drawCircle(unsigned char* fm, int x, int y, int nRadius, int nGray);
+	bool inInCirCle(int nCenterX, int nCenterY, int x, int y, int nRadius);
+	void moveRect(int x, int y);
+	void UpdateDisplay();
+	void onLoadImage();
 };

@@ -13,16 +13,21 @@
 #define IDC_EDIT_Y1                     1002
 #define IDC_BTN_DRAW                    1003
 #define IDC_EDIT_X2                     1004
-#define IDC_START_POSITION2             1005
+#define IDC_END_POSITION                1005
 #define IDC_EDIT_Y2                     1006
 #define IDC_BTN_ACTION                  1007
 #define IDC_BTN_OPEN                    1008
+#define IDC_RADIUS                      1009
+#define IDC_START_POSITION_X_MIN_MAX    1010
+#define IDC_END_POSITION_X_MIN_MAX      1011
+#define IDC_START_POSITION_Y_MIN_MAX    1012
+#define IDC_END_POSITION_Y_MIN_MAX      1013
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        130
+#define _APS_NEXT_RESOURCE_VALUE        131
 #define _APS_NEXT_COMMAND_VALUE         32771
 #define _APS_NEXT_CONTROL_VALUE         1004
 #define _APS_NEXT_SYMED_VALUE           104

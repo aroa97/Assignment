@@ -53,10 +53,13 @@ END_MESSAGE_MAP()
 
 CgAssignment1Dlg::CgAssignment1Dlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_GASSIGNMENT1_DIALOG, pParent)
-	, m_nX1(0)
-	, m_nY1(0)
-	, m_nX2(0)
-	, m_nY2(0)
+	, m_nX1(30)
+	, m_nY1(30)
+	, m_nX2(320)
+	, m_nY2(240)
+	, m_nRadius(0)
+	, m_nGray(0)
+	, m_sRadius(_T(TEXT_RADIUS))
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -68,6 +71,7 @@ void CgAssignment1Dlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_Y1, m_nY1);
 	DDX_Text(pDX, IDC_EDIT_X2, m_nX2);
 	DDX_Text(pDX, IDC_EDIT_Y2, m_nY2);
+	DDX_Text(pDX, IDC_RADIUS, m_sRadius);
 }
 
 BEGIN_MESSAGE_MAP(CgAssignment1Dlg, CDialogEx)
@@ -75,6 +79,9 @@ BEGIN_MESSAGE_MAP(CgAssignment1Dlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_DESTROY()
+	ON_BN_CLICKED(IDC_BTN_DRAW, &CgAssignment1Dlg::OnBnClickedBtnDraw)
+	ON_BN_CLICKED(IDC_BTN_ACTION, &CgAssignment1Dlg::OnBnClickedBtnAction)
+	ON_BN_CLICKED(IDC_BTN_OPEN, &CgAssignment1Dlg::OnBnClickedBtnOpen)
 END_MESSAGE_MAP()
 
 
@@ -111,6 +118,75 @@ BOOL CgAssignment1Dlg::OnInitDialog()
 
 	// TODO: 여기에 추가 초기화 작업을 추가합니다.
 
+	// 윈도우 크기 설정
+	MoveWindow(0,0,810,610);
+
+	// Static Text, Edit Control 크기 및 위치 설정
+	CStatic* pStaticStart =  (CStatic*)GetDlgItem(IDC_START_POSITION);
+	CStatic* pStaticEnd =    (CStatic*)GetDlgItem(IDC_END_POSITION);
+	CStatic* pStaticX1 =     (CStatic*)GetDlgItem(IDC_START_POSITION_X_MIN_MAX);
+	CStatic* pStaticY1 =     (CStatic*)GetDlgItem(IDC_START_POSITION_Y_MIN_MAX);
+	CStatic* pStaticX2 =     (CStatic*)GetDlgItem(IDC_END_POSITION_X_MIN_MAX);
+	CStatic* pStaticY2 =     (CStatic*)GetDlgItem(IDC_END_POSITION_Y_MIN_MAX);
+	CStatic* pStaticRadius = (CStatic*)GetDlgItem(IDC_RADIUS);
+
+	CEdit* pEditX1 =         (CEdit*)GetDlgItem(IDC_EDIT_X1);
+	CEdit* pEditY1 =         (CEdit*)GetDlgItem(IDC_EDIT_Y1);
+	CEdit* pEditX2 =         (CEdit*)GetDlgItem(IDC_EDIT_X2);
+	CEdit* pEditY2 =         (CEdit*)GetDlgItem(IDC_EDIT_Y2);
+
+	int nStaticSttX = 20;
+	int nStaticSttY = 40;
+	int nStaticSttW = 80;
+	int nStaticSttH = 30;
+	int nEditW =      80;
+	int nEditH =      25;
+	int nEndX = nStaticSttX + nStaticSttW + nEditW * 2 + 25;
+	int nRadiusW = 200;
+
+	if (pStaticStart != nullptr)
+		pStaticStart->MoveWindow(nStaticSttX, nStaticSttY, nStaticSttW, nStaticSttH);
+	if (pEditX1 != nullptr)
+		pEditX1->     MoveWindow(nStaticSttX + nStaticSttW + 10, nStaticSttY, nEditW, nEditH);
+	if (pEditY1 != nullptr)
+		pEditY1->     MoveWindow(nStaticSttX + nStaticSttW + nEditW + 10, nStaticSttY, nEditW, nEditH);
+	if (pStaticX1 != nullptr)
+		pStaticX1->   MoveWindow(nStaticSttX + nStaticSttW + 10, 15, nEditW, nEditH);
+	if (pStaticY1 != nullptr)
+		pStaticY1->   MoveWindow(nStaticSttX + nStaticSttW + nEditW + 10, 15, nEditW, nEditH);
+
+	if (pStaticEnd != nullptr)
+		pStaticEnd->  MoveWindow(nEndX, nStaticSttY, nStaticSttW, nStaticSttH);
+	if (pEditX2 != nullptr)
+		pEditX2->     MoveWindow(nEndX + nStaticSttW + 10, nStaticSttY, nEditW, nEditH);
+	if (pEditY2 != nullptr)
+		pEditY2->     MoveWindow(nEndX + nStaticSttW + nEditW + 10, nStaticSttY, nEditW, nEditH);
+	if (pStaticX2 != nullptr)
+		pStaticX2->   MoveWindow(nEndX + nStaticSttW + 10, 15, nEditW, nEditH);
+	if (pStaticY2 != nullptr)
+		pStaticY2->   MoveWindow(nEndX + nStaticSttW + nEditW + 10, 15, nEditW, nEditH);
+
+	if (pStaticRadius != nullptr)
+		pStaticRadius->MoveWindow(nEndX * 2 - 5, nStaticSttY, nRadiusW, nStaticSttH);
+
+	// 버튼 위치 설정
+	CButton* pBtn1 = (CButton*)GetDlgItem(IDC_BTN_DRAW);
+	CButton* pBtn2 = (CButton*)GetDlgItem(IDC_BTN_ACTION);
+	CButton* pBtn3 = (CButton*)GetDlgItem(IDC_BTN_OPEN);
+
+	int nBtnWidth = 100;
+	int nBtnHeight = 40;
+	int nBtnX = 670;
+	int nBtnY = 80;
+
+	if (pBtn1 != nullptr) 
+		pBtn1->MoveWindow(nBtnX, nBtnY, nBtnWidth, nBtnHeight);
+	if (pBtn2 != nullptr) 
+		pBtn2->MoveWindow(nBtnX, nBtnY + 50, nBtnWidth, nBtnHeight);
+	if (pBtn3 != nullptr) 
+		pBtn3->MoveWindow(nBtnX, nBtnY + 100, nBtnWidth, nBtnHeight);
+
+	// 다이얼로그 이미지 초기화
 	m_pDlgImage = new CDlgImage;
 	m_pDlgImage->Create(IDD_CDIGIMAGE, this);
 	m_pDlgImage->ShowWindow(SW_SHOW);
@@ -167,10 +243,141 @@ HCURSOR CgAssignment1Dlg::OnQueryDragIcon()
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
-
+// new로 만든 변수 삭제
 void CgAssignment1Dlg::OnDestroy()
 {
 	CDialogEx::OnDestroy();
 
 	delete m_pDlgImage;
+}
+
+#include <iostream>
+
+void CgAssignment1Dlg::OnBnClickedBtnDraw() // 원 그리는 함수
+{
+	unsigned char* fm = (unsigned char*)m_pDlgImage->m_Image.GetBits();
+	
+	int nWidth =  m_pDlgImage->m_Image.GetWidth();
+	int nHeight = m_pDlgImage->m_Image.GetHeight();
+	m_nRadius =   10 + rand() % (20 + 1); //원의 반지름 (10~30)
+	m_nGray =     100 + rand() % (155 + 1); //원의 색 (100 ~ 255)
+	
+	// 입력값 -> 멤버 변수
+	UpdateData();
+
+	// x1 y1 좌표가 원의 반지름보다 작거나 이미지 크기 - 반지름보다 클 경우 return or Dlglog 출력
+	if (m_nX1 < m_nRadius || m_nY1 < m_nRadius || m_nX1 > nWidth - m_nRadius || m_nY1 > nHeight - m_nRadius) return;
+
+	// 원 그리기
+	drawCircle(fm, m_nX1, m_nY1, m_nRadius, m_nGray);
+
+	// 그린 원의 반지름 윈도우 창에 표시
+	CString str;
+	str.Format(_T("%s%d"), _T(TEXT_RADIUS), m_nRadius);
+	m_sRadius = str;
+	UpdateData(false);
+
+	m_pDlgImage->Invalidate();
+}
+
+// 원을 반지름의 길이만큼 그리는 함수
+void CgAssignment1Dlg::drawCircle(unsigned char* fm, int x, int y, int nRadius, int nGray)
+{
+	int nWidth =  m_pDlgImage->m_Image.GetWidth();
+	int nHeight = m_pDlgImage->m_Image.GetHeight();
+	int nPitch =  m_pDlgImage->m_Image.GetPitch();
+
+	memset(fm, 0, nWidth * nHeight);
+
+	for (int i = y - nRadius; i < y + nRadius; i++) {
+		for (int j = x - nRadius; j < x + nRadius; j++) {
+			if (inInCirCle(x, y, j, i, nRadius))
+				fm[i * nPitch + j] = nGray;
+		}
+	}
+}
+
+// 현재 좌표가 원 안에 위치하는 지 판단하는 함수
+bool CgAssignment1Dlg::inInCirCle(int nCenterX, int nCenterY, int x, int y, int nRadius)
+{
+	bool bRet = false;
+
+	double dX = x - nCenterX;
+	double dY = y - nCenterY;
+	double dDist = dX * dX + dY * dY;
+
+	bRet = (dDist < nRadius * nRadius) ? true : false;
+
+	return bRet;
+}
+
+void CgAssignment1Dlg::OnBnClickedBtnAction()
+{
+	UpdateData();
+
+	// 원이 그려지지 않았으면 return
+	if (m_nRadius == 0 || m_nGray == 0) return;
+	// 좌표값이 정해진 범위보다 작거나 크면 return
+	if (m_nX2 < 30 || m_nY2 < 30 || m_nX2 > 610 || m_nY2 > 450) return;
+
+
+
+
+
+	// End Position으로 이동
+	moveRect(m_nX2, m_nY2);
+
+
+
+
+
+
+
+	// Start Position을 End Position으로 Update
+	m_nX1 = m_nX2;
+	m_nY1 = m_nY2;
+	UpdateData(false);
+}
+
+// 지정된 좌표에 원 그리기
+void CgAssignment1Dlg::moveRect(int x, int y)
+{
+	unsigned char* fm = (unsigned char*)m_pDlgImage->m_Image.GetBits();
+	int nWidth =  m_pDlgImage->m_Image.GetWidth();
+	int nHeight = m_pDlgImage->m_Image.GetHeight();
+	int nPitch =  m_pDlgImage->m_Image.GetPitch();
+
+	memset(fm, 0, nWidth * nHeight);
+
+	drawCircle(fm, x, y, m_nRadius, m_nGray);
+
+	UpdateDisplay();
+}
+
+// 다이얼로그 이미지 Update
+void CgAssignment1Dlg::UpdateDisplay()
+{
+	CClientDC dc(m_pDlgImage);
+	m_pDlgImage->m_Image.Draw(dc, 0, 0);
+}
+
+
+void CgAssignment1Dlg::OnBnClickedBtnOpen()
+{
+	onLoadImage();
+}
+
+void CgAssignment1Dlg::onLoadImage()
+{
+	CFileDialog fileDlg(TRUE, _T("jpg"), NULL, OFN_FILEMUSTEXIST, _T("이미지 파일 (*.bmp;*.jpg;*.png)|*.bmp;*.jpg;*.png|모든 파일 (*.*)|*.*||"));
+	if (fileDlg.DoModal() == IDOK) {
+		CString filePath = fileDlg.GetPathName();
+
+		CImage img;
+		HRESULT hr = img.Load(filePath);
+		if (FAILED(hr)) {
+			AfxMessageBox(_T("이미지 파일을 열 수 없습니다."));
+			return;
+		}
+	}
 }

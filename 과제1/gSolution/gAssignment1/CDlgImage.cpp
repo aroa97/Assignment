@@ -39,6 +39,7 @@ BOOL CDlgImage::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
+	MoveWindow(0, 80, 650, 490);
 	InitImage();
 
 	return TRUE;  // return TRUE unless you set the focus to a control
@@ -74,5 +75,5 @@ void CDlgImage::InitImage()
 	int nPitch = m_Image.GetPitch();
 	unsigned char* fm = (unsigned char*)m_Image.GetBits();
 
-	memset(fm, 0xff, nWidth * nHeight);
+	memset(fm, 0, nWidth * nHeight);
 }

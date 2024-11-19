@@ -17,6 +17,7 @@
 
 #include <afxdisp.h>        // MFC 자동화 클래스입니다.
 
+#define TEXT_RADIUS   "Random Radius (10 ~ 30) : "
 
 
 #ifndef _AFX_NO_OLE_SUPPORT
