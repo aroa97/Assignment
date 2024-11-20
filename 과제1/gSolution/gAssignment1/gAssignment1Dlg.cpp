@@ -8,6 +8,8 @@
 #include "gAssignment1Dlg.h"
 #include "afxdialogex.h"
 
+#include <iostream>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
@@ -60,6 +62,7 @@ CgAssignment1Dlg::CgAssignment1Dlg(CWnd* pParent /*=nullptr*/)
 	, m_nRadius(0)
 	, m_nGray(0)
 	, m_sRadius(_T(TEXT_RADIUS))
+	, m_bDrawCirCle(false)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
@@ -186,10 +189,28 @@ BOOL CgAssignment1Dlg::OnInitDialog()
 	if (pBtn3 != nullptr) 
 		pBtn3->MoveWindow(nBtnX, nBtnY + 100, nBtnWidth, nBtnHeight);
 
+	// 무게중심 좌표 위치 설정
+	CStatic* pCenterTxt = (CStatic*)GetDlgItem(IDC_CENTER_TEXT);
+	CStatic* pCenterXY =  (CStatic*)GetDlgItem(IDC_CENTER_X_Y);
+
+	int nCenterWidth = 100;
+	int nCenterHeight = 40;
+	int nCenterX = 670;
+	int nCenterY = 220;
+
+	if (pCenterTxt != nullptr)
+		pCenterTxt->MoveWindow(nCenterX, nCenterY, nCenterWidth, nCenterHeight);
+	if (pCenterXY != nullptr)
+		pCenterXY-> MoveWindow(nCenterX, nCenterY + 40, nCenterWidth, nCenterHeight);
+
 	// 다이얼로그 이미지 초기화
 	m_pDlgImage = new CDlgImage;
 	m_pDlgImage->Create(IDD_CDIGIMAGE, this);
 	m_pDlgImage->ShowWindow(SW_SHOW);
+
+	// 다이얼로그 예외처리창 초기화
+	m_pDlgException = new CDlgException;
+	m_pDlgException->Create(IDD_EXCEPTION_DLG, this);
 
 	return TRUE;  // 포커스를 컨트롤에 설정하지 않으면 TRUE를 반환합니다.
 }
@@ -248,10 +269,11 @@ void CgAssignment1Dlg::OnDestroy()
 {
 	CDialogEx::OnDestroy();
 
-	delete m_pDlgImage;
+	if (m_pDlgImage)     delete m_pDlgImage;
+	if (m_pDlgException) delete m_pDlgException;
 }
 
-#include <iostream>
+
 
 void CgAssignment1Dlg::OnBnClickedBtnDraw() // 원 그리는 함수
 {
@@ -265,11 +287,17 @@ void CgAssignment1Dlg::OnBnClickedBtnDraw() // 원 그리는 함수
 	// 입력값 -> 멤버 변수
 	UpdateData();
 
-	// x1 y1 좌표가 원의 반지름보다 작거나 이미지 크기 - 반지름보다 클 경우 return or Dlglog 출력
-	if (m_nX1 < m_nRadius || m_nY1 < m_nRadius || m_nX1 > nWidth - m_nRadius || m_nY1 > nHeight - m_nRadius) return;
+	// x1 y1 좌표가 원의 반지름보다 작거나 이미지 크기 - 반지름보다 클 경우 Dlglog 출력 and return
+	if (m_nX1 < m_nRadius || m_nY1 < m_nRadius || m_nX1 > nWidth - m_nRadius || m_nY1 > nHeight - m_nRadius) {
+		m_pDlgException->setTxt(0);
+		m_pDlgException->ShowWindow(SW_SHOW);
+		return;
+	}
 
 	// 원 그리기
 	drawCircle(fm, m_nX1, m_nY1, m_nRadius, m_nGray);
+
+	m_bDrawCirCle = true;
 
 	// 그린 원의 반지름 윈도우 창에 표시
 	CString str;
@@ -313,24 +341,40 @@ bool CgAssignment1Dlg::inInCirCle(int nCenterX, int nCenterY, int x, int y, int 
 
 void CgAssignment1Dlg::OnBnClickedBtnAction()
 {
+	// 입력값 받기
 	UpdateData();
 
 	// 원이 그려지지 않았으면 return
-	if (m_nRadius == 0 || m_nGray == 0) return;
+	if (m_bDrawCirCle == false) { 
+		m_pDlgException->setTxt(1);
+		m_pDlgException->ShowWindow(SW_SHOW);
+		return; 
+	}
 	// 좌표값이 정해진 범위보다 작거나 크면 return
-	if (m_nX2 < 30 || m_nY2 < 30 || m_nX2 > 610 || m_nY2 > 450) return;
-
-
-
+	if (m_nX2 < 30 || m_nY2 < 30 || m_nX2 > 610 || m_nY2 > 450) {
+		m_pDlgException->setTxt(0);
+		m_pDlgException->ShowWindow(SW_SHOW);
+		return;
+	}
 
 
 	// End Position으로 이동
-	moveRect(m_nX2, m_nY2);
+	int nMoveSpaceCnt = 30;
+	int nPixelX = m_nX2 - m_nX1;
+	int nPixelY = m_nY2 - m_nY1;
 
+	// 일정 픽셀만큼 이동
+	for (int i = 1; i <= nMoveSpaceCnt; i++) {
+		moveRect(m_nX1 + nPixelX / nMoveSpaceCnt * i, m_nY1 + nPixelY / nMoveSpaceCnt * i);
 
+		if (i == nMoveSpaceCnt) 
+			moveRect(m_nX2, m_nY2);
 
-
-
+		// 이미지 저장
+		saveCircleImg(i);
+		Sleep(10);
+	}
+	
 
 
 	// Start Position을 End Position으로 Update
@@ -365,19 +409,113 @@ void CgAssignment1Dlg::UpdateDisplay()
 void CgAssignment1Dlg::OnBnClickedBtnOpen()
 {
 	onLoadImage();
+
 }
 
 void CgAssignment1Dlg::onLoadImage()
 {
+	// 현재 경로
+	TCHAR szCurrentDir[MAX_PATH];
+	DWORD dwRet = GetCurrentDirectory(MAX_PATH, szCurrentDir);
+
 	CFileDialog fileDlg(TRUE, _T("jpg"), NULL, OFN_FILEMUSTEXIST, _T("이미지 파일 (*.bmp;*.jpg;*.png)|*.bmp;*.jpg;*.png|모든 파일 (*.*)|*.*||"));
+	
+	// 경로 수정
+	CString absolutePath = CString(szCurrentDir) + _T("\\images");
+	fileDlg.m_ofn.lpstrInitialDir = absolutePath;
+
 	if (fileDlg.DoModal() == IDOK) {
 		CString filePath = fileDlg.GetPathName();
 
+		
 		CImage img;
 		HRESULT hr = img.Load(filePath);
 		if (FAILED(hr)) {
 			AfxMessageBox(_T("이미지 파일을 열 수 없습니다."));
 			return;
+		}
+
+		// 다시 원을 그리도록 값 변경
+		m_bDrawCirCle = false;
+
+		// load image를 DlgImage에 출력한다.
+		showLoadImg(&img);
+
+		drawCentroid();
+
+		UpdateDisplay();
+	}
+}
+
+void CgAssignment1Dlg::saveCircleImg(int nIndex)
+{
+	CString str;
+	str.Format(_T("%s%d%s"), _T(".\\image\\circleImage_"), nIndex, _T(".bmp"));
+	m_pDlgImage->m_Image.Save(str);
+}
+
+void CgAssignment1Dlg::showLoadImg(CImage* img)
+{
+	if (img == NULL) {
+		AfxMessageBox(_T("이미지 파일을 표시할 수 없습니다."));
+		return;
+	}
+	
+	unsigned char* fm =  (unsigned char*)m_pDlgImage->m_Image.GetBits();
+	unsigned char* fm2 = (unsigned char*)img->GetBits();
+
+	int nWidth =  m_pDlgImage->m_Image.GetWidth();
+	int nHeight = m_pDlgImage->m_Image.GetHeight();
+	int nPitch =  m_pDlgImage->m_Image.GetPitch();
+
+	for (int i = 0; i < nHeight; i++) {
+		for (int j = 0; j < nWidth; j++) {
+			// GetPitch 값이 음수이기 때문에 -를 붙인다.
+			fm[i * nPitch + j] = fm2[i * -nPitch + j];
+		}
+	}
+}
+
+void CgAssignment1Dlg::drawCentroid()
+{
+	// 무게 중심 파악
+	unsigned char* fm = (unsigned char*)m_pDlgImage->m_Image.GetBits();
+	int nWidth =  m_pDlgImage->m_Image.GetWidth();
+	int nHeight = m_pDlgImage->m_Image.GetHeight();
+	int nPitch =  m_pDlgImage->m_Image.GetPitch();
+	int nSumX = 0;
+	int nSumY = 0;
+	int nCnt =  0;
+	int nTh = 100;
+
+	for (int i = 0; i < nHeight; i++) {
+		for (int j = 0; j < nWidth; j++) {
+			if (fm[i * nPitch + j] >= nTh) {
+				nSumX += j;
+				nSumY += i;
+				nCnt++;
+			}
+		}
+	}
+	double dCenterX = nSumX / nCnt;
+	double dCenterY = nSumY / nCnt;
+
+	// 무게중심 Static Text에 표시
+	CStatic* pCenterXY =  (CStatic*)GetDlgItem(IDC_CENTER_X_Y);
+
+	CString str;
+	str.Format(_T("%d, %d"), (int)dCenterX, (int)dCenterY);
+	SetDlgItemText(IDC_CENTER_X_Y, str);
+
+	//std::cout << dCenterX << ' ' << dCenterY << std::endl;
+
+	// 무게 중심에 X 표시하기
+	for (int i = -4, j = -4; i <= 4; i++, j++) {
+		for (int a = -1; a <= 1; a++) {
+			for (int b = -1; b <= 1; b++) {
+				fm[((int)dCenterY + i + a) * nPitch + (int)dCenterX + j + b] = 0;
+				fm[((int)dCenterY + i + a) * nPitch + (int)dCenterX - j + b] = 0;
+			}
 		}
 	}
 }

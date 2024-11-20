@@ -2,6 +2,7 @@
 // gAssignment1Dlg.h: 헤더 파일
 //
 #include "CDlgImage.h"
+#include "CDlgException.h"
 
 #pragma once
 
@@ -13,6 +14,7 @@ public:
 	CgAssignment1Dlg(CWnd* pParent = nullptr);	// 표준 생성자입니다.
 
 	CDlgImage* m_pDlgImage;
+	CDlgException* m_pDlgException;
 
 // 대화 상자 데이터입니다.
 #ifdef AFX_DESIGN_TIME
@@ -42,6 +44,7 @@ public:
 	int m_nGray;
 	int m_nRadius;
 	CString m_sRadius;
+	bool m_bDrawCirCle;
 
 	afx_msg void OnDestroy();
 	afx_msg void OnBnClickedBtnDraw();
@@ -53,4 +56,7 @@ public:
 	void moveRect(int x, int y);
 	void UpdateDisplay();
 	void onLoadImage();
+	void saveCircleImg(int nIndex);
+	void showLoadImg(CImage* img);
+	void drawCentroid();
 };

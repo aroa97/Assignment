@@ -183,6 +183,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="CDlgException.h" />
     <ClInclude Include="CDlgImage.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="gAssignment1.h" />
@@ -192,6 +193,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CDlgException.cpp" />
     <ClCompile Include="CDlgImage.cpp" />
     <ClCompile Include="gAssignment1.cpp" />
     <ClCompile Include="gAssignment1Dlg.cpp" />
