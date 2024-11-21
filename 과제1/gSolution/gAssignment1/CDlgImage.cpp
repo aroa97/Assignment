@@ -46,7 +46,6 @@ BOOL CDlgImage::OnInitDialog()
 	// 예외: OCX 속성 페이지는 FALSE를 반환해야 합니다.
 }
 
-
 void CDlgImage::OnPaint()
 {
 	CPaintDC dc(this); // device context for painting

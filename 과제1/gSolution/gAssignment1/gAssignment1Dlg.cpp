@@ -357,7 +357,6 @@ void CgAssignment1Dlg::OnBnClickedBtnAction()
 		return;
 	}
 
-
 	// End Position으로 이동
 	int nMoveSpaceCnt = 30;
 	int nPixelX = m_nX2 - m_nX1;
@@ -408,8 +407,10 @@ void CgAssignment1Dlg::UpdateDisplay()
 
 void CgAssignment1Dlg::OnBnClickedBtnOpen()
 {
+	// image load
 	onLoadImage();
 
+	UpdateDisplay();
 }
 
 void CgAssignment1Dlg::onLoadImage()
@@ -435,15 +436,14 @@ void CgAssignment1Dlg::onLoadImage()
 			return;
 		}
 
-		// 다시 원을 그리도록 값 변경
-		m_bDrawCirCle = false;
+		
+		m_bDrawCirCle = true;
 
 		// load image를 DlgImage에 출력한다.
-		showLoadImg(&img);
+		drawLoadImg(&img);
 
+		// 무게중심에 X 및 선 표시 
 		drawCentroid();
-
-		UpdateDisplay();
 	}
 }
 
@@ -454,7 +454,7 @@ void CgAssignment1Dlg::saveCircleImg(int nIndex)
 	m_pDlgImage->m_Image.Save(str);
 }
 
-void CgAssignment1Dlg::showLoadImg(CImage* img)
+void CgAssignment1Dlg::drawLoadImg(CImage* img)
 {
 	if (img == NULL) {
 		AfxMessageBox(_T("이미지 파일을 표시할 수 없습니다."));
@@ -501,13 +501,18 @@ void CgAssignment1Dlg::drawCentroid()
 	double dCenterY = nSumY / nCnt;
 
 	// 무게중심 Static Text에 표시
-	CStatic* pCenterXY =  (CStatic*)GetDlgItem(IDC_CENTER_X_Y);
-
 	CString str;
 	str.Format(_T("%d, %d"), (int)dCenterX, (int)dCenterY);
 	SetDlgItemText(IDC_CENTER_X_Y, str);
 
 	//std::cout << dCenterX << ' ' << dCenterY << std::endl;
+
+	// 무게 중심에 선 그리기
+	drawLine((int)dCenterX, 0, (int)dCenterX, (int)dCenterY, 0xff, 0xff, 0xff);
+	drawLine(0, (int)dCenterY, (int)dCenterX, (int)dCenterY, 0xff, 0xff, 0xff);
+
+	// 반지름 그리기
+	drawRadius((int)dCenterX, (int)dCenterY, nTh);
 
 	// 무게 중심에 X 표시하기
 	for (int i = -4, j = -4; i <= 4; i++, j++) {
@@ -518,4 +523,89 @@ void CgAssignment1Dlg::drawCentroid()
 			}
 		}
 	}
+}
+
+
+void CgAssignment1Dlg::drawLine(int nStartX, int nStartY, int nEndX, int nEndY, int nRed, int nGreen, int nBlue)
+{
+	// 선의 두께가 1보다 크면 선의 모양은 PS_SOLID로 변경
+	CPen pen;
+	pen.CreatePen(PS_DASHDOT, 1, RGB(nRed, nGreen, nBlue));
+	CDC* pDC = CDC::FromHandle(m_pDlgImage->m_Image.GetDC());
+	CPen* pOldPen = pDC->SelectObject(&pen);
+
+	pDC->MoveTo(nStartX, nStartY);
+	pDC->LineTo(nEndX, nEndY);
+
+
+	pDC->SelectObject(pOldPen);
+
+	// GetDC()를 사용한 후에는 반드시 ReleaseDC()로 해제해야 한다.
+	m_pDlgImage->m_Image.ReleaseDC();
+}
+
+#include <cmath>
+
+void CgAssignment1Dlg::drawRadius(int nCenterX, int nCenterY, int nTh)
+{
+	// load image의 반지름 구하기
+	int nRadius = 0;
+	unsigned char* fm = (unsigned char*)m_pDlgImage->m_Image.GetBits();
+	int nWidth = m_pDlgImage->m_Image.GetWidth();
+	int nHeight = m_pDlgImage->m_Image.GetHeight();
+	int nPitch = m_pDlgImage->m_Image.GetPitch();
+
+	for (int i = 11; i <= 30; i++) {
+		if (fm[nCenterY * nPitch + nCenterX + i] == 0) {
+			nRadius = i;
+			break;
+		}
+	}
+	
+	// 반지름 선 그리기
+	int nX = (nCenterX > nWidth * 0.5) ? nRadius * -0.75 : nRadius * 0.75;
+	int nY = (nCenterY <= nHeight * 0.5) ? nRadius * 0.75 : nRadius * -0.75;
+
+	drawLine(nCenterX, nCenterY, nCenterX + nX, nCenterY + nY, 0, 0, 0);
+
+	// 반지름 길이 표시하기
+	int nLine = (nCenterX > nWidth * 0.5) ? -50 : 50;
+	drawLine(nCenterX + nX, nCenterY + nY, nCenterX + nX + nLine, nCenterY + nY, 0xff, 0xff, 0xff);
+
+
+
+	// Static Text로 반지름 표시
+	CDC* pDC = CDC::FromHandle(m_pDlgImage->m_Image.GetDC());
+
+	CString str;
+	str.Format(_T("radius : %d"), nRadius);
+
+	CFont font;
+	font.CreatePointFont(120, _T("Arial"));
+	CFont* pOldFont = pDC->SelectObject(&font);
+
+	int nTxtX = (nCenterX > nWidth * 0.5) ? str.GetLength() * 5 : 0;
+
+	pDC->TextOut(nCenterX + nX + nLine - nTxtX, nCenterY + nY, str);
+
+	pDC->SelectObject(pOldFont);
+
+	// GetDC()를 사용한 후에는 반드시 ReleaseDC()로 해제해야 한다.
+	m_pDlgImage->m_Image.ReleaseDC();
+
+
+
+	// Start Position를 무게중심으로 변경
+	m_nX1 = nCenterX;
+	m_nY1 = nCenterY;
+
+	// 반지름 값 변경
+	m_nRadius = nRadius;
+	str.Format(_T("%s%d"), _T(TEXT_RADIUS), m_nRadius);
+	m_sRadius = str;
+
+	// 원의 색 값 변경
+	m_nGray = fm[nCenterY * nPitch + nCenterX + 5];
+
+	UpdateData(false);
 }

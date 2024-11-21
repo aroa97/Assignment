@@ -57,6 +57,8 @@ public:
 	void UpdateDisplay();
 	void onLoadImage();
 	void saveCircleImg(int nIndex);
-	void showLoadImg(CImage* img);
+	void drawLoadImg(CImage* img);
 	void drawCentroid();
+	void drawLine(int nStartX, int nStartY, int nEndX, int nEndY, int nRed, int nGreen, int nBlue);
+	void drawRadius(int nCenterX, int nCenterY, int nTh);
 };
